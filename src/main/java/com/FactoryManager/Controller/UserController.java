@@ -5,8 +5,11 @@ import com.FactoryManager.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -44,6 +47,7 @@ public class UserController {
     }
 
     @GetMapping("/count")
+//    @PreAuthorize()
     public ResponseEntity<Map<String, Object>> getRoleCounts() {
         List<RoleCountResponseDto> data = userService.getRoleCounts();
 
@@ -82,6 +86,36 @@ public class UserController {
 
         return ResponseEntity.ok(data);
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileResDto> getProfile(@RequestParam Long id) {
+        return ResponseEntity.ok(userService.getProfile(id));
+    }
+
+    @GetMapping("/distributors")
+    public ResponseEntity<Page<DistributorResDto>> getAllDistributors(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<DistributorResDto> data = userService.getAllDistributors(pageable);
+
+
+        return ResponseEntity.ok(data);
+    }
+
+
+    @PutMapping(value  = "/profile/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserProfileResDto> updateProfile(
+            @PathVariable Long id,
+            @ModelAttribute UpdateProfileReqDto req) {
+
+        return ResponseEntity.ok(userService.updateProfile(id, req));
+    }
+
+
+
 
 
 

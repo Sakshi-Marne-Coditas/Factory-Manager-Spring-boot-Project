@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @Audited
 @Table(name = "orders")
 public class Order {
@@ -43,9 +42,16 @@ public class Order {
     @JoinColumn(name = "distributor_id")
     private User distributor;
 
+    @ManyToOne
+    @JoinColumn(name = "approvedBy_id")
+    private User approvedBy;
+
     // items in this order
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order")
     private List<CartItem> items;
+
+    @OneToMany(mappedBy = "order")
+    private List<OrderBatch> batches;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

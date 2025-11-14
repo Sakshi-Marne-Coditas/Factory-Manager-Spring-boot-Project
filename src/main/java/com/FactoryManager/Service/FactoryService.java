@@ -2,10 +2,10 @@ package com.FactoryManager.Service;
 
 import com.FactoryManager.Constatnts.Role;
 import com.FactoryManager.DTO.*;
-import com.FactoryManager.Entity.Bay;
-import com.FactoryManager.Entity.Factory;
-import com.FactoryManager.Entity.User;
+import com.FactoryManager.Entity.*;
+import com.FactoryManager.Repository.FactoryProductRepository;
 import com.FactoryManager.Repository.FactoryRepository;
+import com.FactoryManager.Repository.ProductRepository;
 import com.FactoryManager.Repository.UserRepository;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import com.FactoryManager.exceptionHandling.FactoryAlreadyExist;
@@ -22,9 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,14 +33,42 @@ public class FactoryService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
+    FactoryProductRepository factoryProductRepository;
+
     public FactoryResponseDto createFactory(FactoryRequestDto factoryRequestDto) {
         if (factoryRepository.findByName(factoryRequestDto.getName()).isPresent()) {
             throw new FactoryAlreadyExist("Factory with this name already exists! " + factoryRequestDto.getName());
         }
+
+        // 1️⃣ Create factory
         Factory factory = new Factory();
         factory.setName(factoryRequestDto.getName());
         factory.setLocation(factoryRequestDto.getLocation());
-        factoryRepository.save(factory);
+        factory = factoryRepository.save(factory);
+
+
+        List<Product> products = productRepository.findAll();
+
+
+        List<FactoryProduct> factoryProducts = new ArrayList<>();
+
+        for (Product product : products) {
+            FactoryProduct fp = new FactoryProduct();
+            fp.setFactory(factory);
+            fp.setProduct(product);
+            fp.setQuantity(100);
+
+
+            factoryProducts.add(fp);
+        }
+
+        factoryProductRepository.saveAll(factoryProducts);
+
+
 
         FactoryResponseDto factoryResponseDto = new FactoryResponseDto();
         factoryResponseDto.setMessage("factory created successfully!");
@@ -56,7 +82,7 @@ public class FactoryService {
         User plantHead = userRepository.findById(factoryUpdateRequestDto.getPlantHead_id())
                 .orElseThrow(() -> new UsernameNotFoundException("Plant head not found"));
 
-        //  Check if this plant head is already assigned to another factory
+
         if (plantHead.getFactory() != null && !plantHead.getFactory().getId().equals(factory.getId())) {
             throw new IllegalMoveException("This plant head is already assigned to another factory!");
         }
@@ -111,8 +137,26 @@ public class FactoryService {
 
 
     public List<LocationFactoryCountResponseDto> getLocationWiseFactoryCount() {
-        return factoryRepository.getLocationWiseFactoryCount();
+
+        List<LocationFactoryCountResponseDto> list = factoryRepository.getLocationWiseFactoryCount();
+
+        if (list.isEmpty()) return list;
+
+        // Step 1: take unique top 3 counts
+        Set<Long> uniqueCounts = new LinkedHashSet<>();
+
+        for (LocationFactoryCountResponseDto dto : list) {
+            uniqueCounts.add(dto.getFactoryCount());
+            if (uniqueCounts.size() == 3) break;  // top 3 distinct counts mil gaye
+        }
+
+        // Step 2: include all items whose count is in that TOP-3 set
+        return list.stream()
+                .filter(dto -> uniqueCounts.contains(dto.getFactoryCount()))
+                .collect(Collectors.toList());
     }
+
+
 
     public Map<String, Object> getFactories(String type) {
 

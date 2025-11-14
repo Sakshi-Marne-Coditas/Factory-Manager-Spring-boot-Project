@@ -37,7 +37,7 @@ public class FactoryProductService {
                         "Product not found in your factory with id: " + dto.getProductId()));
 
 
-        factoryProduct.setQuantity(dto.getQuantity());
+        factoryProduct.setQuantity(factoryProduct.getQuantity()+dto.getQuantity());
         factoryProductRepository.save(factoryProduct);
 
         ProductResponseDto productResponseDto = new ProductResponseDto();
@@ -46,7 +46,7 @@ public class FactoryProductService {
         productResponseDto.setName(factoryProduct.getProduct().getProductName());
         productResponseDto.setImageUrl(factoryProduct.getProduct().getProductImage());
         productResponseDto.setPrice(factoryProduct.getProduct().getProductPrice());
-        productResponseDto.setCategoryName(factoryProduct.getProduct().getCategory().getCategory_name());
+        productResponseDto.setCategoryName(factoryProduct.getProduct().getCategory().getCategoryName());
         productResponseDto.setDescription(factoryProduct.getProduct().getProductDescription());
 
         return productResponseDto;

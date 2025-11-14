@@ -41,7 +41,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // ✅ Proper CORS configuration for Spring Boot 3.x
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

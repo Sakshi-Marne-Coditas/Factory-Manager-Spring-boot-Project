@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/order")
 public class OrderController {
-    @Autowired
-   private OrderService orderService;
-    public String requestOrder(){
-        orderService.requestOrder();
-    }
+//    @Autowired
+//   private OrderService orderService;
+//    public String requestOrder(){
+//        orderService.requestOrder();
+//    }
 }

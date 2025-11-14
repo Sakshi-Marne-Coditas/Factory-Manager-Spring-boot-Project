@@ -15,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +25,7 @@ public class OrderService {
 
     public CheckoutPreviewResponseDto getCheckoutPreview() {
 
-        // 1️⃣ Logged-in distributor
+        //  Logged-in distributor
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
@@ -60,6 +59,9 @@ public class OrderService {
     }
 
     public void requestOrder() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
         User currentUser = userRepository.findByEmail("ram.bhosale@gmail.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
@@ -69,6 +71,24 @@ public class OrderService {
         order.setDistributor(currentUser);
         order.setItems(cartItems);
         order.setTotal_amount(getCheckoutPreview().getGrandTotal());
+
+    }
+
+
+    public void approveOrder(int orderid){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User currentUser = userRepository.findByEmail("ram.bhosale@gmail.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        Order order = new Order();
+        order.setStatus(RequestStatus.APPROVED);
+        order.setApprovedBy(currentUser);
+//        order.setBatches();
+
+
+
 
     }
 }

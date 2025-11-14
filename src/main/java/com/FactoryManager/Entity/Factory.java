@@ -16,7 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @Audited
 public class Factory {
 
@@ -27,23 +26,23 @@ public class Factory {
     private String name;
     private String location;
 
-    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "factory")
     private List<FactoryProduct> factoryProducts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "factory")
     private List<Tool_Request> toolRequest;
 
-    @OneToMany(mappedBy = "factory",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "factory")
     private List<Bay> bays;
 
-    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "factory")
     private List<FactoryTool> factoryTools = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "factory")
     private List<User> users;
 
-    @OneToMany(mappedBy = "factory",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "factory")
     private List<CentralOfficeRequest> centralOfficeRequests;
 
     @CreationTimestamp

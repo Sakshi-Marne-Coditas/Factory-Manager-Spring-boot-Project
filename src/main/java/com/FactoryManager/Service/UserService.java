@@ -283,7 +283,7 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        // ✅ 1. Fetch paginated data from DB
+        //  1. Fetch paginated data from DB
         Page<User> userPage;
         if (factoryId != null) {
             userPage = userRepository.findByRoleAndFactory_Id(role, factoryId, pageable);
@@ -291,7 +291,7 @@ public class UserService {
             userPage = userRepository.findByRole(role, pageable);
         }
 
-        // ✅ 2. Apply search (in-memory filter)
+        // 2. Apply search (in-memory filter)
         List<User> filteredUsers = userPage.getContent().stream()
                 .filter(user -> {
                     if (search == null || search.trim().isEmpty()) return true;
@@ -313,8 +313,88 @@ public class UserService {
                 ))
                 .collect(Collectors.toList());
 
-        // ✅ 4. Return paginated response
+
         return new PageImpl<>(dtoList, pageable, userPage.getTotalElements());
     }
+
+    public UserProfileResDto getProfile(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        UserProfileResDto userProfileResDto = new UserProfileResDto();
+        userProfileResDto.setId(user.getId());
+        userProfileResDto.setEmail(user.getEmail());
+        userProfileResDto.setRole(user.getRole().getValue());
+        userProfileResDto.setPhoto(user.getPhoto());
+        userProfileResDto.setUsername(user.getUsername());
+        if (user.getFactory() != null) {
+            userProfileResDto.setFactoryName(user.getFactory().getName());
+        } else {
+            userProfileResDto.setFactoryName("N/A");   // or "N/A"
+        }
+
+        if (user.getPhoto() != null) {
+            userProfileResDto.setPhoto(user.getPhoto());
+        } else {
+            userProfileResDto.setPhoto("N/A");   // or "N/A"
+        }
+
+        return userProfileResDto;
+
+    }
+
+    public Page<DistributorResDto> getAllDistributors(Pageable pageable) {
+
+        Page<User> distributorPage = userRepository.findByRole(Role.DISTRIBUTOR, pageable);
+
+        return distributorPage.map(user -> {
+            DistributorDetails d = user.getDistributorDetails();
+
+            return DistributorResDto.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .companyName((d == null || d.getCompanyName() == null || d.getCompanyName().trim().isEmpty()) ? "N/A" : d.getCompanyName())
+                    .state((d == null || d.getState() == null || d.getState().trim().isEmpty()) ? "N/A" : d.getState())
+                    .build();
+        });
+    }
+
+
+    public UserProfileResDto updateProfile(Long id, UpdateProfileReqDto req) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        if (req.getUsername() != null) {
+            user.setUsername(req.getUsername());
+        }
+
+        if (req.getEmail() != null) {
+            user.setEmail(req.getEmail());
+        }
+
+        String imageUrl = null;
+        if (req.getPhoto() != null && !req.getPhoto().isEmpty()) {
+            try {
+                imageUrl = cloudinaryService.uploadFile(req.getPhoto());
+                user.setPhoto(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Error uploading image to Cloudinary", e);
+            }
+        }
+
+
+        //  If factoryId is provided, update factory
+        if (req.getFactoryId() != null) {
+            Factory factory = factoryRepository.findById(req.getFactoryId())
+                    .orElseThrow(() -> new RuntimeException("Factory not found!"));
+            user.setFactory(factory);
+        }
+
+        userRepository.save(user);
+
+        return getProfile(id);
+    }
+
 
 }

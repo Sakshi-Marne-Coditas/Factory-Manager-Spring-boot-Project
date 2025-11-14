@@ -52,7 +52,7 @@ public class CentralOfficeRequestService {
 
         CentralOfficeRequest saved = centralOfficeRequestRepository.save(request);
 
-        // map to response
+
         CentralOfficeRequestResponseDto response = new CentralOfficeRequestResponseDto();
         response.setId(saved.getId());
         response.setProductName(saved.getProduct().getProductName());
@@ -98,7 +98,6 @@ public class CentralOfficeRequestService {
             throw new RuntimeException("Invalid status value!");
         }
 
-        // ✅ 5. Save
         CentralOfficeRequest updated = centralOfficeRequestRepository.save(request);
 
         UpdateResponseStatus response = new UpdateResponseStatus();
@@ -138,7 +137,7 @@ public class CentralOfficeRequestService {
                 // Show all pending requests
                 requests = centralOfficeRequestRepository.findByRequestStatus(RequestStatus.PENDING, pageable);
             } else {
-                // Show approved/rejected by this specific user
+                // Show approved/rejected by this specific planthead
                 requests = centralOfficeRequestRepository.findByRequestStatusAndApprovedBy(requestStatus, plantHead, pageable);
             }
         }
@@ -155,17 +154,14 @@ public class CentralOfficeRequestService {
 
     public Page<ProductTotalQuantityResDto> getAllProductTotals(String search, int page, int size) {
 
-        // Step 1: Fetch all data
         List<FactoryProduct> factoryProducts = factoryProductRepository.findAll();
 
-        // Step 2: Group by Product ID and calculate total quantity
         Map<Long, Long> totalQtyMap = factoryProducts.stream()
                 .collect(Collectors.groupingBy(
                         fp -> fp.getProduct().getId(),
                         Collectors.summingLong(FactoryProduct::getQuantity)
                 ));
 
-        // Step 3: Convert to DTOs
         List<ProductTotalQuantityResDto> dtoList = totalQtyMap.entrySet().stream()
                 .map(entry -> {
                     FactoryProduct sample = factoryProducts.stream()
@@ -178,7 +174,7 @@ public class CentralOfficeRequestService {
                     return new ProductTotalQuantityResDto(
                             entry.getKey(),
                             sample.getProduct().getProductName(),
-                            sample.getProduct().getCategory().getCategory_name(),
+                            sample.getProduct().getCategory().getCategoryName(),
                             sample.getProduct().getProductPrice(),
                             sample.getProduct().getProductImage(),
                             entry.getValue()
@@ -187,7 +183,6 @@ public class CentralOfficeRequestService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // Step 4: Apply search filter (by product name)
         if (search != null && !search.isBlank()) {
             dtoList = dtoList.stream()
                     .filter(dto -> dto.getProductName().toLowerCase().contains(search.toLowerCase()))

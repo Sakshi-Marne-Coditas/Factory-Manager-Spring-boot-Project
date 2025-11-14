@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @Audited
 public class Tool_Request {
 
@@ -47,7 +46,7 @@ public class Tool_Request {
 
     private LocalDateTime approvalDate;
 
-    @OneToMany(mappedBy = "toolRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "toolRequest")
     private List<Tool> tools;
 
     @CreationTimestamp

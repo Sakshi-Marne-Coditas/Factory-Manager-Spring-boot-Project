@@ -91,21 +91,19 @@ public class ProductService {
       productResponseDto.setPrice(product.getProductPrice());
       productResponseDto.setQuantity(product.getQtyAvailable());
       productResponseDto.setImageUrl(product.getProductImage());
-      productResponseDto.setCategoryName(product.getCategory().getCategory_name());
+      productResponseDto.setCategoryName(product.getCategory().getCategoryName());
       productResponseDto.setImageUrl(product.getProductImage());
 
       return productResponseDto;
     }
 
-    @Transactional
+
     public String deleteProduct(Long productId) {
 
-        Product product = productRepository.findById(productId)
+        productRepository.findById(productId)
                 .orElseThrow(() -> new ElementNotFoundException("Product not found with id: " + productId));
 
-        factoryProductRepository.deleteAllByProductId(productId);
-
-        productRepository.delete(product);
+        productRepository.deleteById(productId);
 
 
 
@@ -125,7 +123,7 @@ public class ProductService {
         return productsPage.map(p -> new AllProductResponseDto(
                 p.getId(),
                 p.getProductName(),
-                (p.getCategory() != null) ? p.getCategory().getCategory_name() : null,
+                (p.getCategory() != null) ? p.getCategory().getCategoryName() : null,
                 p.getProductDescription(),
                 p.getProductPrice(),
                 p.getProductImage()

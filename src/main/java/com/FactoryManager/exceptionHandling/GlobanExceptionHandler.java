@@ -37,6 +37,12 @@ public class GlobanExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(ElementNotFoundException.class)
+    public ResponseEntity<ApiError> handleElementNotFoundException(ElementNotFoundException ex){
+        ApiError apiError= new ApiError( ex.getMessage(), HttpStatus.NOT_FOUND );
+        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(IllegalMoveException.class)
     public ResponseEntity<ApiError> handleIllegalMoveException(IllegalMoveException ex){
         ApiError apiError= new ApiError( ex.getMessage(), HttpStatus.CONFLICT );

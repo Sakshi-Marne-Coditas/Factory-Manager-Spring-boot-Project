@@ -14,8 +14,8 @@ import java.util.Optional;
 public interface FactoryRepository extends JpaRepository<Factory, Long> {
     Optional<Factory> findByName(String name);
 
-    // ✅ JPQL to count factories grouped by location
+    // JPQL to count factories grouped by location
     @Query("SELECT new com.FactoryManager.DTO.LocationFactoryCountResponseDto(f.location, COUNT(f)) " +
-            "FROM Factory f GROUP BY f.location ORDER BY f.location ASC")
+            "FROM Factory f GROUP BY f.location ORDER BY COUNT(f) DESC")
     List<LocationFactoryCountResponseDto> getLocationWiseFactoryCount();
 }

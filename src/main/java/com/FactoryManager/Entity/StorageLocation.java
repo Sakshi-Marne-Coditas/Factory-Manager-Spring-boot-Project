@@ -40,7 +40,7 @@ public class StorageLocation {
     private StorageArea storageArea;
 
 
-    @OneToMany(mappedBy = "storageLocation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "storageLocation")
     private List<Tool> tools = new ArrayList<>();
 
     @CreationTimestamp

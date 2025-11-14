@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @Audited
 @Builder
 @Table(name = "users")
@@ -46,29 +45,34 @@ public class User {
     @JoinColumn(name = "factory_id")
     private Factory factory;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user")
     private DistributorDetails distributorDetails;
 
-    @OneToMany(mappedBy = "assignedTo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "assignedTo")
     private List<Tool> assignedTools;
 
     // Relationships
-    @OneToMany(mappedBy = "distributor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "distributor")
     private List<CartItem> cartItems;
 
-    @OneToMany(mappedBy = "distributor", cascade =CascadeType.ALL )
+    @OneToMany(mappedBy = "distributor")
     private List<Order> orders;
 
-    @OneToMany(mappedBy = "worker",cascade =CascadeType.ALL )
+    @OneToMany(mappedBy = "approvedBy" )
+    private List<Order> order;
+
+
+
+    @OneToMany(mappedBy = "worker" )
     private List<Tool_Request> toolRequests;
 
-    @OneToMany(mappedBy = "distributor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "distributor")
     private List<Redemption> redemptions;
 
-    @OneToMany(mappedBy = "requestedBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "requestedBy")
     private List<CentralOfficeRequest> raisedRequests;
 
-    @OneToMany(mappedBy = "approvedBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "approvedBy")
     private List<CentralOfficeRequest> approvedRequests;
 
     @CreationTimestamp

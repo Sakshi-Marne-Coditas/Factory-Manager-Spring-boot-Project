@@ -34,7 +34,7 @@ public class StorageArea {
     @JoinColumn(name = "factory_id", unique = true)
     private Factory factory;
 
-    @OneToMany(mappedBy = "storageArea", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "storageArea")
     private List<StorageLocation> storageLocations = new ArrayList<>();
 
     @CreationTimestamp

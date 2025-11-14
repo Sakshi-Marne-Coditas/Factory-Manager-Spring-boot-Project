@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Role {
     WORKER("Worker"),
     CHIEF_SUPERVISOR("Chief-Supervisor"),
-    PLANT_HEAD("Plant-Head"),
+        PLANT_HEAD("Plant-Head"),
     OWNER("Owner"),
     CENTRAL_OFFICER("Central-Officer"),
     DISTRIBUTOR("Distributor"),

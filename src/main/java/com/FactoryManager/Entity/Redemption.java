@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @Audited
 public class Redemption {
 
@@ -33,7 +32,7 @@ public class Redemption {
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
-    @OneToMany(mappedBy = "redemption", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "redemption")
     private List<Merchandise> merchandises;
 
     @CreationTimestamp

@@ -1,6 +1,7 @@
 package com.FactoryManager.Entity;
 
 import com.FactoryManager.Constatnts.RequestStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @Audited
 public class CentralOfficeRequest {
     @Id
@@ -28,6 +28,7 @@ public class CentralOfficeRequest {
 
     @OneToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JsonIgnore
     private Product product;
 
     @ManyToOne
