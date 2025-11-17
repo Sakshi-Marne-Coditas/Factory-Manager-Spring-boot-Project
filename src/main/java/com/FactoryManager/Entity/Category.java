@@ -1,5 +1,6 @@
 package com.FactoryManager.Entity;
 
+import com.FactoryManager.Constatnts.CategoryOf;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,6 +24,9 @@ public class Category {
 
     @Column(name = "category_name")
     private String categoryName;
+
+    @Enumerated(EnumType.STRING)
+    private CategoryOf categoryOf;
 
     @OneToMany(mappedBy = "category")
     private List<Product> products;

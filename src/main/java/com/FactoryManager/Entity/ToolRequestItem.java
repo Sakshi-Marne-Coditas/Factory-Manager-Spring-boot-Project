@@ -6,33 +6,39 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@Audited
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Audited
-public class FactoryTool {
+public class ToolRequestItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Each request item belongs to a request
     @ManyToOne
-    @JoinColumn(name = "factory_id")
-    private Factory factory;
+    @JoinColumn(name = "tool_request_id")
+    private Tool_Request toolRequest;
 
+    // Which tool is requested
     @ManyToOne
     @JoinColumn(name = "tool_id")
     private Tool tool;
 
-    @Column(nullable = false, columnDefinition = "int default 0")
-    private int currentAvailable = 0;
-
     private int quantity;
+
+    // When issued to worker
+    private LocalDate issuedDate;
+
+    // When returned
+    private LocalDate returnDate;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

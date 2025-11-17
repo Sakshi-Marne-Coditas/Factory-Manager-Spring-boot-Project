@@ -126,14 +126,29 @@ public class FactoryService {
     }
 
     public FactoryResponseDto deleteFactory(Long id) {
-        Factory factory = factoryRepository.findById(id)
-                .orElseThrow(() -> new ElementNotFoundException("Factory not found! "));
-        factoryRepository.deleteById(factory.getId());
 
+        Factory factory = factoryRepository.findById(id)
+                .orElseThrow(() -> new ElementNotFoundException("Factory not found!"));
+
+        // STEP 1: Unlink all users before deleting factory
+        List<User> users = factory.getUsers();
+        if (users != null && !users.isEmpty()) {
+            for (User user : users) {
+                user.setFactory(null); // remove foreign key reference
+            }
+            userRepository.saveAll(users);
+        }
+
+        // STEP 2: Delete the factory
+        factoryRepository.delete(factory);
+
+        // STEP 3: Prepare response
         FactoryResponseDto response = new FactoryResponseDto();
         response.setMessage("Factory deleted successfully!");
+
         return response;
     }
+
 
 
     public List<LocationFactoryCountResponseDto> getLocationWiseFactoryCount() {

@@ -2,14 +2,18 @@ package com.FactoryManager.Entity;
 
 import com.FactoryManager.Constatnts.ToolType;
 import com.FactoryManager.Constatnts.UseCase;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.FactoryManager.Entity.FactoryTool;
+import com.FactoryManager.Entity.StorageLocation;
+import com.FactoryManager.Entity.ToolRequestItem;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,44 +30,33 @@ public class Tool {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String tool_name;
-
-    private String tool_description;
-
-    private String tool_image;
-
-    private LocalDate issued_date;
-
-    private LocalDate return_date;
-
-    @OneToMany(mappedBy = "tool", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FactoryTool> factoryTools = new ArrayList<>();
-
+    private String toolName;
+    private String toolDescription;
+    private String toolImage;
 
     @Enumerated(EnumType.STRING)
-    private UseCase use_case;
+    private UseCase useCase;
 
     @Enumerated(EnumType.STRING)
-    private ToolType tool_type;
+    private ToolType toolType;
 
     private String storage_area;
-
-    private int threshold_qty;
-
-    private int total_stock;
+    private int thresholdQty;
+    private int totalStock;
 
     @ManyToOne
-    @JoinColumn(name = "toolRequest_id")
-    @JsonIgnore
-    private Tool_Request toolRequest;
-
-    @ManyToOne
-    @JoinColumn(name = "assigned_to")
-    private User assignedTo;
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @ManyToOne
     @JoinColumn(name = "storage_location_id")
     private StorageLocation storageLocation;
+
+    @OneToMany(mappedBy = "tool", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FactoryTool> factoryTools = new ArrayList<>();
+
+    @OneToMany(mappedBy = "tool")
+    private List<ToolRequestItem> requestItems;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -75,7 +68,4 @@ public class Tool {
     public String getUniqueLocationCode() {
         return storageLocation != null ? storageLocation.getLocationCode() : "NOT_IN_STORAGE";
     }
-
-
 }
-

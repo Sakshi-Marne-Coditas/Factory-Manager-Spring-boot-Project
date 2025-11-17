@@ -7,4 +7,5 @@ import lombok.Data;
 public class AdCategoryDTO {
     @NotBlank(message = "Category name cannot be blank")
     private String name;
+    private String categoryOf;
 }

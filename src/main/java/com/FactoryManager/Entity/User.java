@@ -48,9 +48,6 @@ public class User {
     @OneToOne(mappedBy = "user")
     private DistributorDetails distributorDetails;
 
-    @OneToMany(mappedBy = "assignedTo")
-    private List<Tool> assignedTools;
-
     // Relationships
     @OneToMany(mappedBy = "distributor")
     private List<CartItem> cartItems;

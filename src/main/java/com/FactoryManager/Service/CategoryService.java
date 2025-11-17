@@ -1,5 +1,6 @@
 package com.FactoryManager.Service;
 
+import com.FactoryManager.Constatnts.CategoryOf;
 import com.FactoryManager.DTO.AdCategoryDTO;
 import com.FactoryManager.DTO.AdCategoryResDTO;
 import com.FactoryManager.Entity.Category;
@@ -29,6 +30,7 @@ public class CategoryService {
 
         Category category = new Category();
         category.setCategoryName(dto.getName());
+        category.setCategoryOf(CategoryOf.TOOL);
 
          repo.save(category);
 

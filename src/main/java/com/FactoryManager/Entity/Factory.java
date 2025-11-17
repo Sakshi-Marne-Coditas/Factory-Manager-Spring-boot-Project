@@ -26,23 +26,23 @@ public class Factory {
     private String name;
     private String location;
 
-    @OneToMany(mappedBy = "factory")
+    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
     private List<FactoryProduct> factoryProducts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "factory")
+    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
     private List<Tool_Request> toolRequest;
 
-    @OneToMany(mappedBy = "factory")
+    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
     private List<Bay> bays;
 
-    @OneToMany(mappedBy = "factory")
+    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
     private List<FactoryTool> factoryTools = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "factory")
     private List<User> users;
 
-    @OneToMany(mappedBy = "factory")
+    @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
     private List<CentralOfficeRequest> centralOfficeRequests;
 
     @CreationTimestamp
