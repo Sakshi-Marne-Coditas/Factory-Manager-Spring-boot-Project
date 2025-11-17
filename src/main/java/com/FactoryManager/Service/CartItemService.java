@@ -30,11 +30,11 @@ public class CartItemService {
     @Transactional
     public String addToCart(AddToCartRequestDto request) {
 
-        // 🔐 Step 1: Get current logged-in user's email
+        //  Step 1: Get current logged-in user's email
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User currentUser = userRepository.findByEmail("ram.bhosale@gmail.com")
+        User currentUser = userRepository.findByEmail("newmail@gmail.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         Product product = productRepository.findById(request.getProductId())
@@ -64,7 +64,7 @@ public class CartItemService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User currentUser = userRepository.findByEmail("ram.bhosale@gmail.com")
+        User currentUser = userRepository.findByEmail("newmail@gmail.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         List<CartItem> cartItems = currentUser.getCartItems();
@@ -100,7 +100,7 @@ public class CartItemService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User currentUser = userRepository.findByEmail("ram.bhosale@gmail.com")
+        User currentUser = userRepository.findByEmail("newmail@gmail.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         Product product = productRepository.findById(productId)

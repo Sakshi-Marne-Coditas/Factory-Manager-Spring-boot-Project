@@ -54,7 +54,7 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/cart/add")
     public ResponseEntity<String> addToCart(@RequestBody AddToCartRequestDto request) {
 
         String message = cartItemService.addToCart(request);
@@ -67,7 +67,7 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/remove/{productId}")
+    @DeleteMapping("/cart/remove/{productId}")
     public ResponseEntity<String> removeProductFromCart(@PathVariable Long productId) {
         String message = cartItemService.removeProductFromCart(productId);
         return ResponseEntity.ok(message);

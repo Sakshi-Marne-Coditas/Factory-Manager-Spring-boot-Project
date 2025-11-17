@@ -47,10 +47,10 @@ public class Order {
     private User approvedBy;
 
     // items in this order
-    @OneToMany(mappedBy = "order")
-    private List<CartItem> items;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderBatch> batches;
 
     @CreationTimestamp

@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.hibernate.envers.Audited;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,4 +34,7 @@ public class OrderBatch {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
+    @OneToMany(mappedBy = "batch", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderBatchItem> items;
 }
