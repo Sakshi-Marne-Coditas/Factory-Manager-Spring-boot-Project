@@ -7,29 +7,42 @@ import com.FactoryManager.Entity.Factory;
 import com.FactoryManager.Repository.BayRepository;
 import com.FactoryManager.Repository.FactoryRepository;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class BayService {
-    @Autowired
-    BayRepository bayRepository;
 
-    @Autowired
-    FactoryRepository factoryRepository;
+    private final BayRepository bayRepository;
 
+
+    private final FactoryRepository factoryRepository;
+
+    @Transactional
     public AddBayResDto addBay(AddBayReqDto addBayReqDto) {
-        Factory factory= factoryRepository.findById(addBayReqDto.getFactory_id()).orElseThrow(() -> new ElementNotFoundException("Factory not found!"));
+
+        Long factoryId = addBayReqDto.getFactory_id();
+
+        if (!factoryRepository.existsById(factoryId)) {
+            throw new ElementNotFoundException("Factory not found with id: " + factoryId);
+        }
+
+        Factory factory = factoryRepository.findById(factoryId).get();
 
         Bay bay = new Bay();
         bay.setBay_name(addBayReqDto.getBay_Name());
         bay.setFactory(factory);
 
         bayRepository.save(bay);
-        AddBayResDto addBayResDto = new AddBayResDto();
-        addBayResDto.setBay_id(bay.getBay_id());
-        addBayResDto.setBay_Name(bay.getBay_name());
-        addBayResDto.setFactory_name(bay.getFactory().getName());
-        return addBayResDto;
+
+        AddBayResDto res = new AddBayResDto();
+        res.setBay_id(bay.getBay_id());
+        res.setBay_Name(bay.getBay_name());
+        res.setFactory_name(factory.getName());
+
+        return res;
     }
 }

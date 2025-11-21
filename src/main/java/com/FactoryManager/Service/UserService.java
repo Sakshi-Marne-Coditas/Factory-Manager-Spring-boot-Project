@@ -5,12 +5,13 @@ import com.FactoryManager.Entity.Factory;
 import com.FactoryManager.Repository.FactoryRepository;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import com.FactoryManager.util.JwtUtil;
-import com.FactoryManager.Constatnts.Role;
+import com.FactoryManager.Constants.Role;
 import com.FactoryManager.Entity.DistributorDetails;
 import com.FactoryManager.Entity.User;
 import com.FactoryManager.Repository.UserRepository;
 import com.FactoryManager.Security.CustomUserDetails;
 import com.FactoryManager.exceptionHandling.EmailAlreadyExistException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -110,7 +111,7 @@ public class UserService {
                 token);
     }
 
-
+    @Transactional
     public UserResponseDto addPHOrChief(UserRequestDto dto) {
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -152,7 +153,7 @@ public class UserService {
         return response;
 
     }
-
+    @Transactional
     public CentralOfficerResDto addCO(CentralOfficerReqDto dto) {
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -189,11 +190,16 @@ public class UserService {
 
 
     }
-
+    @Transactional
     public UpdateUserResponseDto updateUser(UpdateUserRequestDto updateUserRequestDto) {
 
-        User user = userRepository.findById(updateUserRequestDto.getId())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + updateUserRequestDto.getId()));
+        Long userId = updateUserRequestDto.getId();
+
+        if (!userRepository.existsById(userId)) {
+            throw new UsernameNotFoundException("User not found with id: " + userId);
+        }
+
+        User user = userRepository.findById(userId).get();
 
         if (updateUserRequestDto.getUsername() != null && !updateUserRequestDto.getUsername().isBlank()) {
             user.setUsername(updateUserRequestDto.getUsername());
@@ -214,24 +220,27 @@ public class UserService {
 
         userRepository.save(user);
 
-        UpdateUserResponseDto updateUserResponseDto = new UpdateUserResponseDto();
-        updateUserResponseDto.setId(user.getId());
-        updateUserResponseDto.setUserName(user.getUsername());
-        updateUserResponseDto.setEmail(user.getEmail());
-        updateUserResponseDto.setPhoto(user.getPhoto());
-        return updateUserResponseDto;
+        return new UpdateUserResponseDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhoto()
+        );
     }
 
+    @Transactional
     public String deleteUser(Long id) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+        if (!userRepository.existsById(id)) {
+            throw new UsernameNotFoundException("User not found with id: " + id);
+        }
 
-        userRepository.delete(user);
+        userRepository.deleteById(id);
 
         return "User deleted successfully with id: " + id;
     }
 
+    @Transactional
     public List<RoleCountResponseDto> getRoleCounts() {
 
         List<Role> allowedRoles = List.of(Role.CHIEF_SUPERVISOR, Role.PLANT_HEAD, Role.CENTRAL_OFFICER, Role.WORKER);
@@ -322,30 +331,24 @@ public class UserService {
     }
 
     public UserProfileResDto getProfile(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        UserProfileResDto userProfileResDto = new UserProfileResDto();
-        userProfileResDto.setId(user.getId());
-        userProfileResDto.setEmail(user.getEmail());
-        userProfileResDto.setRole(user.getRole().getValue());
-        userProfileResDto.setPhoto(user.getPhoto());
-        userProfileResDto.setUsername(user.getUsername());
-        if (user.getFactory() != null) {
-            userProfileResDto.setFactoryName(user.getFactory().getName());
-        } else {
-            userProfileResDto.setFactoryName("N/A");
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found!");
         }
 
-        if (user.getPhoto() != null) {
-            userProfileResDto.setPhoto(user.getPhoto());
-        } else {
-            userProfileResDto.setPhoto("N/A");
-        }
+        User user = userRepository.findById(id).get();
 
-        return userProfileResDto;
+        UserProfileResDto dto = new UserProfileResDto();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole().getValue());
+        dto.setUsername(user.getUsername());
+        dto.setPhoto(user.getPhoto() != null ? user.getPhoto() : "N/A");
+        dto.setFactoryName(user.getFactory() != null ? user.getFactory().getName() : "N/A");
 
+        return dto;
     }
+
 
     public Page<DistributorResDto> getAllDistributors(Pageable pageable) {
 
@@ -364,34 +367,32 @@ public class UserService {
         });
     }
 
-
+    @Transactional
     public UserProfileResDto updateProfile(Long id, UpdateProfileReqDto req) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        if (req.getUsername() != null) {
-            user.setUsername(req.getUsername());
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found!");
         }
 
-        if (req.getEmail() != null) {
-            user.setEmail(req.getEmail());
-        }
+        User user = userRepository.findById(id).get();
 
-        String imageUrl = null;
+        if (req.getUsername() != null) user.setUsername(req.getUsername());
+        if (req.getEmail() != null) user.setEmail(req.getEmail());
+
         if (req.getPhoto() != null && !req.getPhoto().isEmpty()) {
             try {
-                imageUrl = cloudinaryService.uploadFile(req.getPhoto());
+                String imageUrl = cloudinaryService.uploadFile(req.getPhoto());
                 user.setPhoto(imageUrl);
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading image to Cloudinary", e);
             }
         }
 
-
-        //  If factory id is provided updating factory
         if (req.getFactoryId() != null) {
-            Factory factory = factoryRepository.findById(req.getFactoryId())
-                    .orElseThrow(() -> new RuntimeException("Factory not found!"));
+            if (!factoryRepository.existsById(req.getFactoryId())) {
+                throw new RuntimeException("Factory not found!");
+            }
+            Factory factory = factoryRepository.findById(req.getFactoryId()).get();
             user.setFactory(factory);
         }
 
@@ -399,6 +400,7 @@ public class UserService {
 
         return getProfile(id);
     }
+
 
 
 }

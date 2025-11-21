@@ -1,6 +1,6 @@
 package com.FactoryManager.Entity;
 
-import com.FactoryManager.Constatnts.Role;
+import com.FactoryManager.Constants.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

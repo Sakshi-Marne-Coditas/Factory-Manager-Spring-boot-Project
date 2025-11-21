@@ -1,6 +1,6 @@
 package com.FactoryManager.Service;
 
-import com.FactoryManager.Constatnts.RequestStatus;
+import com.FactoryManager.Constants.RequestStatus;
 import com.FactoryManager.DTO.*;
 import com.FactoryManager.Entity.CentralOfficeRequest;
 import com.FactoryManager.Entity.FactoryProduct;
@@ -11,6 +11,7 @@ import com.FactoryManager.Repository.FactoryProductRepository;
 import com.FactoryManager.Repository.ProductRepository;
 import com.FactoryManager.Repository.UserRepository;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
@@ -34,6 +35,7 @@ public class CentralOfficeRequestService {
     @Autowired
     private FactoryProductRepository factoryProductRepository;
 
+    @Transactional
     public CentralOfficeRequestResponseDto createRequest(CentralOfficeRequestDto dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -64,7 +66,7 @@ public class CentralOfficeRequestService {
 
         return response;
     }
-
+    @Transactional
     public List<CentralOfficeRequestResponseDto> getAllPendingRequests() {
         List<CentralOfficeRequest> pendingRequests =
                 centralOfficeRequestRepository.findByRequestStatus(RequestStatus.PENDING);
@@ -79,7 +81,7 @@ public class CentralOfficeRequestService {
                 ))
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     public UpdateResponseStatus updateRequestStatus(Long requestId, UpdateRequestStatusDto dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -113,7 +115,7 @@ public class CentralOfficeRequestService {
         response.setApproveBy(approver.getUsername());
         return response;
     }
-
+    @Transactional
     public Page<CentralOfficeRequestResponseDto> getRequestsForPlantHead(
             Pageable pageable,
             String status,
@@ -125,7 +127,6 @@ public class CentralOfficeRequestService {
 
         User plantHead = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-
 
         Page<CentralOfficeRequest> requests;
 
@@ -197,7 +198,7 @@ public class CentralOfficeRequestService {
         }
 
 
-        // 5️⃣ Convert back to Page manually
+
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), list.size());
 
@@ -218,7 +219,7 @@ public class CentralOfficeRequestService {
         );
     }
 
-
+    @Transactional
     public Page<ProductTotalQuantityResDto> getAllProductTotals(String search, int page, int size) {
 
         List<FactoryProduct> factoryProducts = factoryProductRepository.findAll();
@@ -275,7 +276,7 @@ public class CentralOfficeRequestService {
                 req.getProduct().getProductImage()
         );
     }
-
+    @Transactional
     public Page<CentralOfficeRequestResponseDto> getRequests(RequestStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 

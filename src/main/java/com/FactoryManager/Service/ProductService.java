@@ -97,7 +97,7 @@ public class ProductService {
       return productResponseDto;
     }
 
-
+    @Transactional
     public String deleteProduct(Long productId) {
 
         productRepository.findById(productId)
@@ -109,7 +109,7 @@ public class ProductService {
 
         return "Product deleted successfully with id: " + productId;
     }
-
+    @Transactional
     public Page<AllProductResponseDto> getAllProducts(Long categoryId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productsPage;

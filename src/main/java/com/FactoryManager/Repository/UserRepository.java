@@ -1,6 +1,6 @@
 package com.FactoryManager.Repository;
 
-import com.FactoryManager.Constatnts.Role;
+import com.FactoryManager.Constants.Role;
 import com.FactoryManager.DTO.RoleCountResponseDto;
 import com.FactoryManager.Entity.User;
 import org.springframework.data.domain.Page;

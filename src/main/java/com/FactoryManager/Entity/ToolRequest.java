@@ -1,6 +1,6 @@
 package com.FactoryManager.Entity;
 
-import com.FactoryManager.Constatnts.RequestStatus;
+import com.FactoryManager.Constants.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

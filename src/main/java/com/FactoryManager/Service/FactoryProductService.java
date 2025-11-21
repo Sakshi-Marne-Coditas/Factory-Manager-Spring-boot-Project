@@ -1,18 +1,17 @@
 package com.FactoryManager.Service;
 
 import com.FactoryManager.DTO.ProductResponseDto;
-import com.FactoryManager.exceptionHandling.ElementNotFoundException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
 import com.FactoryManager.DTO.UpdateFactoryProductQuantityDto;
 import com.FactoryManager.Entity.FactoryProduct;
 import com.FactoryManager.Entity.User;
 import com.FactoryManager.Repository.FactoryProductRepository;
 import com.FactoryManager.Repository.UserRepository;
+import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -22,22 +21,31 @@ public class FactoryProductService {
     private final FactoryProductRepository factoryProductRepository;
     private final UserRepository userRepository;
 
+
     @Transactional
     public ProductResponseDto updateFactoryProductQuantity(UpdateFactoryProductQuantityDto dto) {
 
+        // Get logged-in user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        User currentUser = userRepository.findByEmail("sam.bhosale@gmail.com")
-                .orElseThrow(() -> new UsernameNotFoundException(("User not found with email: " + email)));
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found with email: " + email));
+
+        if (currentUser.getFactory() == null) {
+            throw new ElementNotFoundException("User is not assigned to any factory");
+        }
 
         Long factoryId = currentUser.getFactory().getId();
 
-        FactoryProduct factoryProduct = factoryProductRepository.findByProductIdAndFactoryId(dto.getProductId(), factoryId)
-                .orElseThrow(() -> new ElementNotFoundException(
-                        "Product not found in your factory with id: " + dto.getProductId()));
 
+        FactoryProduct factoryProduct =
+                factoryProductRepository.findByProductIdAndFactoryId(dto.getProductId(), factoryId)
+                        .orElseThrow(() ->
+                                new ElementNotFoundException("Product not found in your factory with id: " + dto.getProductId()));
 
-        factoryProduct.setQuantity(factoryProduct.getQuantity()+dto.getQuantity());
+        factoryProduct.setQuantity(factoryProduct.getQuantity() + dto.getQuantity());
         factoryProductRepository.save(factoryProduct);
 
         ProductResponseDto productResponseDto = new ProductResponseDto();
@@ -52,4 +60,3 @@ public class FactoryProductService {
         return productResponseDto;
     }
 }
-

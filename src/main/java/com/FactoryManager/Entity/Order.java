@@ -1,8 +1,8 @@
 package com.FactoryManager.Entity;
 
 
-import com.FactoryManager.Constatnts.PaymentMethod;
-import com.FactoryManager.Constatnts.RequestStatus;
+import com.FactoryManager.Constants.PaymentMethod;
+import com.FactoryManager.Constants.RequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

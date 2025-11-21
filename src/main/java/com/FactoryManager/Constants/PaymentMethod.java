@@ -1,4 +1,4 @@
-package com.FactoryManager.Constatnts;
+package com.FactoryManager.Constants;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

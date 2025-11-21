@@ -1,6 +1,5 @@
 package com.FactoryManager.DTO;
 
-import com.FactoryManager.Constatnts.Role;
 import lombok.Data;
 
 @Data

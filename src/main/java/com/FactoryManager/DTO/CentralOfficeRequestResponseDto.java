@@ -1,6 +1,5 @@
 package com.FactoryManager.DTO;
 
-import com.FactoryManager.Constatnts.RequestStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

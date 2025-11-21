@@ -1,6 +1,6 @@
 package com.FactoryManager.Service;
 
-import com.FactoryManager.Constatnts.CategoryOf;
+import com.FactoryManager.Constants.CategoryOf;
 import com.FactoryManager.DTO.AdCategoryDTO;
 import com.FactoryManager.DTO.AdCategoryResDTO;
 import com.FactoryManager.Entity.Category;
@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,7 +42,7 @@ public class CategoryService {
          return adCategoryResDTO;
     }
 
-
+    @Transactional
     public Page<AdCategoryResDTO> getAllCategoryNames(String search, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());

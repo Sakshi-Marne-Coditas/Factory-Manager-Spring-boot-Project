@@ -5,6 +5,7 @@ import com.FactoryManager.Entity.*;
 import com.FactoryManager.Repository.*;
 import com.FactoryManager.exceptionHandling.ElementAlreadyExistException;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +35,7 @@ public class ToolService {
     @Autowired
     private FactoryToolRepository factoryToolRepository;
 
+    @Transactional
     public AddToolResponseDto addTool(AddToolRequestDto dto) {
 
         // Check if tool already exists
@@ -102,7 +104,7 @@ public class ToolService {
 
         return response;
     }
-
+    @Transactional
     public Page<ToolResponseDto> getAllTools(String search, Long categoryId, int page, int size) {
 
         // Logged-in user
@@ -153,6 +155,7 @@ public class ToolService {
         });
     }
 
+    @Transactional
     public AddToolResponseDto updateTool(Long toolId, AddToolRequestDto dto) {
 
         Tool tool = toolRepository.findById(toolId)
@@ -216,6 +219,7 @@ public class ToolService {
         return resp;
     }
 
+    @Transactional
     public UpdateToolQtyResponse increaseToolQty(UpdateToolQtyRequest req) {
 
 

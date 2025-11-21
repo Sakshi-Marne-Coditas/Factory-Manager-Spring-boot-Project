@@ -1,6 +1,6 @@
 package com.FactoryManager.Repository;
 
-import com.FactoryManager.Constatnts.RequestStatus;
+import com.FactoryManager.Constants.RequestStatus;
 import com.FactoryManager.Entity.CentralOfficeRequest;
 import com.FactoryManager.Entity.User;
 import org.springframework.data.domain.Page;

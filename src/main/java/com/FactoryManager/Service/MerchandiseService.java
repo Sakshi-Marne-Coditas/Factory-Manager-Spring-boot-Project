@@ -5,6 +5,7 @@ import com.FactoryManager.DTO.MerchandiseResponseDto;
 import com.FactoryManager.Entity.Merchandise;
 import com.FactoryManager.Repository.MerchandiseRepository;
 import com.FactoryManager.exceptionHandling.ElementAlreadyExistException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,7 @@ public class MerchandiseService {
         return merchandiseResponseDto;
     }
 
-
+    @Transactional
     public MerchandiseResponseDto updateMerchandise(Long id, MerchandiseRequestDto dto) {
         Merchandise existing = merchandiseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Merchandise not found with id: " + id));
@@ -81,6 +82,7 @@ public class MerchandiseService {
         return response;
     }
 
+    @Transactional
     public Page<MerchandiseResponseDto> getAllMerchandise(int page, int size, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Merchandise> merchandisePage;
@@ -109,6 +111,7 @@ public class MerchandiseService {
         return dto;
     }
 
+    @Transactional
     public void deleteMerchandise(Long id) {
         Merchandise merchandise = merchandiseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Merchandise not found with ID: " + id));

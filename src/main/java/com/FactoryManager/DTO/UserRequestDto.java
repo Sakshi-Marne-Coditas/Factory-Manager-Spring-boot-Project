@@ -1,6 +1,6 @@
 package com.FactoryManager.DTO;
 
-import com.FactoryManager.Constatnts.Role;
+import com.FactoryManager.Constants.Role;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;

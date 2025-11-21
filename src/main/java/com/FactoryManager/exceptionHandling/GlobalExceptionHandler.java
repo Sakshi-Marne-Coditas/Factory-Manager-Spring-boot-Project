@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class GlobanExceptionHandler {
+public class GlobalExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistException.class)
     public ResponseEntity<ApiError> handleEmailAlreadyExistException(EmailAlreadyExistException ex){
         ApiError apiError= new ApiError( ex.getMessage(), HttpStatus.CONFLICT );

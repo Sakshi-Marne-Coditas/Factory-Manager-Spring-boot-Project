@@ -1,6 +1,5 @@
 package com.FactoryManager.Service;
 
-import com.FactoryManager.Config.OrderConstants;
 import com.FactoryManager.DTO.*;
 import com.FactoryManager.Entity.CartItem;
 import com.FactoryManager.Entity.Product;
@@ -28,18 +27,24 @@ public class CartItemService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
+
     @Transactional
     public String addToCart(AddToCartRequestDto request) {
 
-        //  Step 1: Get current logged-in user's email
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User currentUser = userRepository.findByEmail("newmail@gmail.com")
+
+        User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ElementNotFoundException("Product not found with id: " + request.getProductId()));
+        Long productId = request.getProductId();
+
+        if (!productRepository.existsById(productId)) {
+            throw new ElementNotFoundException("Product not found with id: " + productId);
+        }
+
+        Product product = productRepository.findById(productId).get();
 
         var existingItemOpt = cartItemRepository.findByDistributorAndProduct(currentUser, product);
 
@@ -48,24 +53,24 @@ public class CartItemService {
             existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
             cartItemRepository.save(existingItem);
             return "Product quantity updated in cart!";
-        } else {
-            CartItem cartItem = new CartItem();
-            cartItem.setDistributor(currentUser);
-            cartItem.setProduct(product);
-            cartItem.setQuantity(request.getQuantity());
-
-            cartItemRepository.save(cartItem);
-
-            return "Product added to cart successfully!";
         }
+
+        CartItem cartItem = new CartItem();
+        cartItem.setDistributor(currentUser);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(request.getQuantity());
+        cartItemRepository.save(cartItem);
+
+        return "Product added to cart successfully!";
     }
+
 
     public CartResponseDto getAllCartItemsForCurrentUser() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User currentUser = userRepository.findByEmail("newmail@gmail.com")
+        User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         List<CartItem> cartItems = currentUser.getCartItems();
@@ -88,33 +93,37 @@ public class CartItemService {
             );
         }).collect(Collectors.toList());
 
-        Double totalSubtotal = itemDtos.stream()
+        Double total = itemDtos.stream()
                 .mapToDouble(CartItemResponseDto::getItemSubtotal)
                 .sum();
 
-        return new CartResponseDto(itemDtos, totalSubtotal);
+        return new CartResponseDto(itemDtos, total);
     }
 
 
     @Transactional
     public String removeProductFromCart(Long productId) {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User currentUser = userRepository.findByEmail("newmail@gmail.com")
+        User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+        if (!productRepository.existsById(productId)) {
+            throw new ElementNotFoundException("Product not found with id: " + productId);
+        }
+
+        Product product = productRepository.findById(productId).get();
 
         CartItem cartItem = cartItemRepository.findByDistributorAndProduct(currentUser, product)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Product not found in your cart with id: " + productId));
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Product not found in your cart with id: " + productId)
+                );
 
         cartItemRepository.delete(cartItem);
 
         return "Product removed from cart successfully!";
     }
-
 
 }

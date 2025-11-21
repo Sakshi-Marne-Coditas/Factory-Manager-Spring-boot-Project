@@ -1,6 +1,6 @@
 package com.FactoryManager.Service;
 
-import com.FactoryManager.Constatnts.Role;
+import com.FactoryManager.Constants.Role;
 import com.FactoryManager.DTO.*;
 import com.FactoryManager.Entity.*;
 import com.FactoryManager.Repository.FactoryProductRepository;
@@ -10,16 +10,11 @@ import com.FactoryManager.Repository.UserRepository;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import com.FactoryManager.exceptionHandling.FactoryAlreadyExist;
 import com.FactoryManager.exceptionHandling.IllegalMoveException;
-import com.cloudinary.api.exceptions.AlreadyExists;
-import com.cloudinary.api.exceptions.BadRequest;
-import com.cloudinary.api.exceptions.NotFound;
-import org.apache.coyote.BadRequestException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,7 +38,7 @@ public class FactoryService {
             throw new FactoryAlreadyExist("Factory with this name already exists! " + factoryRequestDto.getName());
         }
 
-        // 1️⃣ Create factory
+
         Factory factory = new Factory();
         factory.setName(factoryRequestDto.getName());
         factory.setLocation(factoryRequestDto.getLocation());
@@ -74,6 +69,7 @@ public class FactoryService {
         return factoryResponseDto;
     }
 
+    @Transactional
     public FactoryResponseDto updateFactory(Long id, FactoryRequestDto factoryUpdateRequestDto) {
         Factory factory = factoryRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Factory not found! "));
@@ -106,13 +102,14 @@ public class FactoryService {
         response.setMessage("Factory updated successfully!");
         return response;
     }
-
+    @Transactional
     public String getPlantHeadNameByFactoryId(Long factoryId) {
         return userRepository.findByFactoryIdAndRole(factoryId, Role.PLANT_HEAD)
                 .map(User::getUsername)
                 .orElse("N/A");
     }
 
+    @Transactional
     public Page<AllFactoryResponseDto> getAllFactories(
             String search, String location, int page, int size) {
 
@@ -157,7 +154,7 @@ public class FactoryService {
     }
 
 
-
+    @Transactional
     public FactoryResponseDto deleteFactory(Long id) {
 
         Factory factory = factoryRepository.findById(id)
@@ -181,14 +178,14 @@ public class FactoryService {
     }
 
 
-
+    @Transactional
     public List<LocationFactoryCountResponseDto> getLocationWiseFactoryCount() {
 
         List<LocationFactoryCountResponseDto> list = factoryRepository.getLocationWiseFactoryCount();
 
         if (list.isEmpty()) return list;
 
-        // Step 1: take unique top 3 counts
+        // take unique top 3 counts
         Set<Long> uniqueCounts = new LinkedHashSet<>();
 
         for (LocationFactoryCountResponseDto dto : list) {
@@ -203,7 +200,7 @@ public class FactoryService {
     }
 
 
-
+    @Transactional
     public Map<String, Object> getFactories(String type) {
 
         List<Factory> factories = factoryRepository.findAll();

@@ -1,10 +1,7 @@
 package com.FactoryManager.Entity;
 
-import com.FactoryManager.Constatnts.ToolType;
-import com.FactoryManager.Constatnts.UseCase;
-import com.FactoryManager.Entity.FactoryTool;
-import com.FactoryManager.Entity.StorageLocation;
-import com.FactoryManager.Entity.ToolRequestItem;
+import com.FactoryManager.Constants.ToolType;
+import com.FactoryManager.Constants.UseCase;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

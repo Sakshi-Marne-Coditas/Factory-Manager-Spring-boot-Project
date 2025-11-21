@@ -1,6 +1,6 @@
 package com.FactoryManager.Entity;
 
-import com.FactoryManager.Constatnts.RequestStatus;
+import com.FactoryManager.Constants.RequestStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

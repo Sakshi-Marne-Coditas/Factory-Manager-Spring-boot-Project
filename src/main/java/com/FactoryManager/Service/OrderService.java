@@ -1,12 +1,13 @@
 package com.FactoryManager.Service;
 
 import com.FactoryManager.Config.OrderConstants;
-import com.FactoryManager.Constatnts.RequestStatus;
+import com.FactoryManager.Constants.RequestStatus;
 import com.FactoryManager.DTO.*;
 import com.FactoryManager.Entity.*;
 import com.FactoryManager.Repository.*;
 import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +39,7 @@ public class OrderService {
     @Autowired
     private FactoryProductRepository factoryProductRepository;
 
+    @Transactional
     public CheckoutPreviewResponseDto getCheckoutPreview() {
 
         //  Logged-in distributor
@@ -72,23 +74,23 @@ public class OrderService {
 
         return new CheckoutPreviewResponseDto(itemDtos, subtotal, gst, delivery, grandTotal);
     }
-
+    @Transactional
     public OrderResponseDto requestOrder() {
 
-        // 1️⃣ Logged-in user
+        //  Logged-in user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
         User currentUser = userRepository.findByEmail("newmail@gmail.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        // 2️⃣ Get cart items
+        //Get cart items
         List<CartItem> cartItems = currentUser.getCartItems();
         if (cartItems.isEmpty()) {
             throw new ElementNotFoundException("Cart is empty!");
         }
 
-        // 3️⃣ Create order
+        // Create order
         Order order = new Order();
         order.setStatus(RequestStatus.PENDING);
         order.setDistributor(currentUser);
@@ -98,7 +100,7 @@ public class OrderService {
         // Items list already initialised in entity
         List<OrderItem> orderItems = new ArrayList<>();
 
-        // 4️⃣ Convert CartItem → OrderItem
+        //  Convert CartItem → OrderItem
         for (CartItem cart : cartItems) {
 
             OrderItem item = new OrderItem();
@@ -114,13 +116,13 @@ public class OrderService {
         // Attach items to order
         order.setItems(orderItems);
 
-        // 5️⃣ Save order → cascade will save OrderItems too
+        //  Save order → cascade will save OrderItems too
         orderRepository.save(order);
 
-        // 6️⃣ Clear cart
+        //  Clear cart
         cartItemRepository.deleteAll(cartItems);
 
-        // 7️⃣ Create response DTO
+        //  Create response DTO
         OrderResponseDto response = new OrderResponseDto();
         response.setOrderId(order.getId());
         response.setStatus(order.getStatus().name());
@@ -146,7 +148,7 @@ public class OrderService {
 
 
 
-
+    @Transactional
     public ApproveOrderBatchesResponseDto approveOrder(ApproveOrderBatchesRequestDto dto) {
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -233,8 +235,7 @@ public class OrderService {
         }
 
 
-
-
+    @Transactional
     public PaginatedOrderResponseDto getOrdersForCentral(String status, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
@@ -299,7 +300,7 @@ public class OrderService {
 
         return paginated;
     }
-
+    @Transactional
     public PaginatedOrderResponseDto getOrdersForDistributor(int page, int size) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -352,7 +353,7 @@ public class OrderService {
 
         return response;
     }
-
+    @Transactional
     public String confirmPaymentAndReduceStock(OrderPaymentRequestDto dto) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

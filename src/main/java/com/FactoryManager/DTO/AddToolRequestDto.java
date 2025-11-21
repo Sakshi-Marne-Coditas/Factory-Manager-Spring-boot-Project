@@ -1,7 +1,7 @@
 package com.FactoryManager.DTO;
 
-import com.FactoryManager.Constatnts.ToolType;
-import com.FactoryManager.Constatnts.UseCase;
+import com.FactoryManager.Constants.ToolType;
+import com.FactoryManager.Constants.UseCase;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
