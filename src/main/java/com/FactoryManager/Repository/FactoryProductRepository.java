@@ -11,5 +11,8 @@ public interface FactoryProductRepository extends JpaRepository<FactoryProduct, 
     // find FactoryProduct record by productId and factoryId
     Optional<FactoryProduct> findByProductIdAndFactoryId(Long productId, Long factoryId);
 
+    Optional<FactoryProduct> findTopByProductIdOrderByQuantityDesc(Long productId);
+
+
     void deleteAllByProductId(Long productId);
 }

@@ -35,6 +35,8 @@ public class OrderService {
     private ProductRepository productRepository;
     @Autowired
     private OrderItemRepository orderItemRepository;
+    @Autowired
+    private FactoryProductRepository factoryProductRepository;
 
     public CheckoutPreviewResponseDto getCheckoutPreview() {
 
@@ -150,7 +152,7 @@ public class OrderService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
 
-            User currentUser = userRepository.findByEmail("mit@gmail.com")
+            User currentUser = userRepository.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             Order order = orderRepository.findById(dto.getOrderId())
@@ -303,7 +305,7 @@ public class OrderService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
-        User distributor = userRepository.findByEmail("newmail@gmail.com")
+        User distributor = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         Pageable pageable = PageRequest.of(page, size);
@@ -350,6 +352,48 @@ public class OrderService {
 
         return response;
     }
+
+    public String confirmPaymentAndReduceStock(OrderPaymentRequestDto dto) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Find order
+        Order order = orderRepository.findById(dto.getOrderId())
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+
+        // Update payment method
+        order.setPaymentMethod(dto.getPaymentMethod());
+
+        // Reduce stock factory-wise
+        for (OrderItem item : order.getItems()) {
+
+            Product product = item.getProduct();
+            int qtyNeeded = item.getQuantity();
+
+            // Find factory where this product has max stock
+            FactoryProduct maxStockFactory = factoryProductRepository
+                    .findTopByProductIdOrderByQuantityDesc(product.getId())
+                    .orElseThrow(() -> new RuntimeException("No stock found for product"));
+
+            if (maxStockFactory.getQuantity() < qtyNeeded) {
+                throw new RuntimeException("Not enough stock for product: " + product.getProductName());
+            }
+
+            // Reduce stock
+            maxStockFactory.setQuantity(maxStockFactory.getQuantity() - qtyNeeded);
+            factoryProductRepository.save(maxStockFactory);
+        }
+
+        orderRepository.save(order);
+
+        return "Payment confirmed and stock updated successfully!";
+    }
+
 
 
 }

@@ -51,28 +51,48 @@ public class GlobanExceptionHandler {
 
 
 
-//    @ExceptionHandler(IllegalMoveException.class)
-//    public ResponseEntity<ApiError> handleIllegalMoveException(IllegalMoveException ex){
-//        ApiError apiError= new ApiError( ex.getMessage(), HttpStatus.FORBIDDEN );
-//        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
-//    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex){
         ApiError apiError= new ApiError( ex.getMessage(), HttpStatus.BAD_REQUEST );
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(org.springframework.web.method.annotation.HandlerMethodValidationException.class)
+    public ResponseEntity<Map<String, String>> handleHandlerMethodValidationException(
+            org.springframework.web.method.annotation.HandlerMethodValidationException ex) {
+
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+
+        ex.getParameterValidationResults().forEach(result -> {
+            String paramName = result.getMethodParameter().getParameterName();
+
+            result.getResolvableErrors().forEach(error -> {
+                errors.put(paramName, error.getDefaultMessage());
+            });
         });
+
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(fieldName, message);
+        });
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+
+
 
 
 }

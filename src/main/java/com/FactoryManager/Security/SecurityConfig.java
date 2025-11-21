@@ -45,15 +45,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Allow all origins temporarily (for dev & ngrok)
         config.setAllowedOriginPatterns(Collections.singletonList("*"));
-        // Or specify allowed origins if needed
-        // config.setAllowedOrigins(Arrays.asList(
-        //     "http://localhost:3000",
-        //     "http://localhost:4200",
-        //     "https://your-ngrok-url.ngrok-free.app"
-        // ));
-
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
@@ -68,10 +60,14 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ enable proper CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -89,4 +85,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

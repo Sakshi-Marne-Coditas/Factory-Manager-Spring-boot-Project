@@ -30,7 +30,7 @@ public class Factory {
     private List<FactoryProduct> factoryProducts = new ArrayList<>();
 
     @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
-    private List<Tool_Request> toolRequest;
+    private List<ToolRequest> toolRequest;
 
     @OneToMany(mappedBy = "factory", cascade = CascadeType.ALL)
     private List<Bay> bays;

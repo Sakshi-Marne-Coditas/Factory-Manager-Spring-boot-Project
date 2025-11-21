@@ -5,6 +5,7 @@ import com.FactoryManager.DTO.AddBayResDto;
 import com.FactoryManager.Service.BayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ public class BayController {
     @Autowired
     BayService bayService;
 
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/newbay")
     public ResponseEntity<AddBayResDto> addBay(@RequestBody AddBayReqDto addBayReqDto){
         AddBayResDto addBayResDto= bayService.addBay(addBayReqDto);

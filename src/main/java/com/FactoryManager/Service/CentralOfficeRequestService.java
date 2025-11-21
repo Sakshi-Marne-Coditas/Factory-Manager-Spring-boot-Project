@@ -10,10 +10,12 @@ import com.FactoryManager.Repository.CentralOfficeRequestRepository;
 import com.FactoryManager.Repository.FactoryProductRepository;
 import com.FactoryManager.Repository.ProductRepository;
 import com.FactoryManager.Repository.UserRepository;
+import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -36,7 +38,7 @@ public class CentralOfficeRequestService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User centralOfficer = userRepository.findByEmail("sanika@gmail.com")
+        User centralOfficer = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         Product product = productRepository.findById(dto.getProductId())
@@ -57,6 +59,7 @@ public class CentralOfficeRequestService {
         response.setId(saved.getId());
         response.setProductName(saved.getProduct().getProductName());
         response.setRequiredQuantity(saved.getQty());
+        response.setImage(saved.getProduct().getProductImage());
         response.setStatus(saved.getRequestStatus().getValue());
 
         return response;
@@ -82,10 +85,10 @@ public class CentralOfficeRequestService {
         String email = authentication.getName();
 
         CentralOfficeRequest request = centralOfficeRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found with ID: " + requestId));
+                .orElseThrow(() -> new ElementNotFoundException("Request not found with ID: " + requestId));
 
-        User approver = userRepository.findByEmail("jay.bhosale@gmail.com")
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        User approver = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         if (dto.getStatus() == RequestStatus.APPROVED) {
             request.setRequestStatus(RequestStatus.APPROVED);
@@ -111,46 +114,110 @@ public class CentralOfficeRequestService {
         return response;
     }
 
-    public Page<CentralOfficeRequestResponseDto> getRequestsForPlantHead(Pageable pageable, String status) {
+    public Page<CentralOfficeRequestResponseDto> getRequestsForPlantHead(
+            Pageable pageable,
+            String status,
+            String search
+    ) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User plantHead = userRepository.findByEmail("jay.bhosale@gmail.com")
+        User plantHead = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
 
         Page<CentralOfficeRequest> requests;
 
         if (status == null || status.equalsIgnoreCase("all")) {
-            // All pending + approved/rejected by that user
             requests = centralOfficeRequestRepository.findAllPendingOrApprovedBy(plantHead, pageable);
         } else {
-            // Convert to enum
+
             RequestStatus requestStatus;
             try {
                 requestStatus = RequestStatus.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid status value: " + status);
+                throw new RuntimeException("Invalid status: " + status);
             }
 
             if (requestStatus == RequestStatus.PENDING) {
-                // Show all pending requests
                 requests = centralOfficeRequestRepository.findByRequestStatus(RequestStatus.PENDING, pageable);
             } else {
-                // Show approved/rejected by this specific planthead
                 requests = centralOfficeRequestRepository.findByRequestStatusAndApprovedBy(requestStatus, plantHead, pageable);
             }
         }
 
 
-        return requests.map(req -> new CentralOfficeRequestResponseDto(
-                req.getId(),
-                req.getProduct().getProductName(),
-                req.getQty(),
-                req.getRequestStatus().name(),
-                req.getProduct().getProductImage()
-        ));
+
+        List<CentralOfficeRequest> list = requests.getContent();
+
+
+
+        if (search != null && !search.trim().isEmpty()) {
+            String s = search.toLowerCase();
+
+            list = list.stream()
+                    .filter(r ->
+                            r.getProduct().getProductName().toLowerCase().contains(s)
+                    )
+                    .toList();
+        }
+
+
+        //Apply Sorting (In-Memory)
+        if (pageable.getSort().isSorted()) {
+
+            Comparator<CentralOfficeRequest> comparator = null;
+
+            for (Sort.Order order : pageable.getSort()) {
+                String property = order.getProperty();
+                boolean asc = order.isAscending();
+
+                Comparator<CentralOfficeRequest> temp = switch (property) {
+                    case "qty" ->
+                            Comparator.comparing(CentralOfficeRequest::getQty);
+                    case "productName" ->
+                            Comparator.comparing(r -> r.getProduct().getProductName().toLowerCase());
+                    case "requestStatus" ->
+                            Comparator.comparing(r -> r.getRequestStatus().name());
+                    default ->
+                            null; // ignore if unknown
+                };
+
+                if (temp != null) {
+                    if (!asc) temp = temp.reversed();
+
+                    comparator = (comparator == null) ? temp : comparator.thenComparing(temp);
+                }
+            }
+
+            if (comparator != null) {
+                list = list.stream().sorted(comparator).toList();
+            }
+        }
+
+
+        // 5️⃣ Convert back to Page manually
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), list.size());
+
+        List<CentralOfficeRequest> finalList =
+                (start <= end) ? list.subList(start, end) : List.of();
+
+        return new PageImpl<>(
+                finalList.stream()
+                        .map(req -> new CentralOfficeRequestResponseDto(
+                                req.getId(),
+                                req.getProduct().getProductName(),
+                                req.getQty(),
+                                req.getRequestStatus().name(),
+                                req.getProduct().getProductImage()
+                        )).toList(),
+                pageable,
+                list.size()
+        );
     }
+
 
     public Page<ProductTotalQuantityResDto> getAllProductTotals(String search, int page, int size) {
 

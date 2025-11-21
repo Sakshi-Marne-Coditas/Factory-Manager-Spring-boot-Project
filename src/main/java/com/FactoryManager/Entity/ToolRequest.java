@@ -19,7 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @Audited
-public class Tool_Request {
+public class ToolRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

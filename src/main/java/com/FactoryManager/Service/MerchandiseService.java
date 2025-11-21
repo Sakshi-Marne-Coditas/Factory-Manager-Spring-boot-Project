@@ -4,6 +4,7 @@ import com.FactoryManager.DTO.MerchandiseRequestDto;
 import com.FactoryManager.DTO.MerchandiseResponseDto;
 import com.FactoryManager.Entity.Merchandise;
 import com.FactoryManager.Repository.MerchandiseRepository;
+import com.FactoryManager.exceptionHandling.ElementAlreadyExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class MerchandiseService {
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading image to Cloudinary", e);
             }
+        }
+        if (merchandiseRepository.existsByName(dto.getName())) {
+            throw new ElementAlreadyExistException("Merchandise with the same name already exists");
         }
 
         Merchandise merchandise = new Merchandise();
@@ -87,7 +91,7 @@ public class MerchandiseService {
             merchandisePage = merchandiseRepository.findAll(pageable);
         }
 
-        // Convert entity → DTO
+        // Convert entity  DTO
         List<MerchandiseResponseDto> dtoList = merchandisePage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

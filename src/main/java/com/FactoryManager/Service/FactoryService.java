@@ -15,8 +15,7 @@ import com.cloudinary.api.exceptions.BadRequest;
 import com.cloudinary.api.exceptions.NotFound;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -114,16 +113,50 @@ public class FactoryService {
                 .orElse("N/A");
     }
 
-    public Page<AllFactoryResponseDto> getAllFactories(Pageable pageable) {
-        Page<Factory> factoryPage = factoryRepository.findAll(pageable);
+    public Page<AllFactoryResponseDto> getAllFactories(
+            String search, String location, int page, int size) {
 
-        return factoryPage.map(factory -> new AllFactoryResponseDto(
-                factory.getId(),
-                factory.getName(),
-                factory.getLocation(),
-                getPlantHeadNameByFactoryId(factory.getId())
-        ));
+        List<Factory> allFactories = factoryRepository.findAll();
+
+        List<Factory> filtered = allFactories.stream()
+                .filter(f -> {
+
+                    if (search != null && !search.isBlank()) {
+                        String s = search.toLowerCase();
+                        boolean match =
+                                f.getName().toLowerCase().contains(s) ||
+                                        f.getLocation().toLowerCase().contains(s);
+                        if (!match) return false;
+                    }
+
+                    if (location != null && !location.isBlank()) {
+                        if (!f.getLocation().equalsIgnoreCase(location.trim())) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                })
+                .collect(Collectors.toList());
+
+        filtered.sort(Comparator.comparing(Factory::getCreatedAt).reversed());
+
+        int start = Math.min(page * size, filtered.size());
+        int end = Math.min(start + size, filtered.size());
+        List<Factory> paginatedList = filtered.subList(start, end);
+
+        List<AllFactoryResponseDto> dtoList = paginatedList.stream()
+                .map(factory -> new AllFactoryResponseDto(
+                        factory.getId(),
+                        factory.getName(),
+                        factory.getLocation(),
+                        getPlantHeadNameByFactoryId(factory.getId())
+                )).toList();
+
+        return new PageImpl<>(dtoList, PageRequest.of(page, size), filtered.size());
     }
+
+
 
     public FactoryResponseDto deleteFactory(Long id) {
 
@@ -139,10 +172,8 @@ public class FactoryService {
             userRepository.saveAll(users);
         }
 
-        // STEP 2: Delete the factory
         factoryRepository.delete(factory);
 
-        // STEP 3: Prepare response
         FactoryResponseDto response = new FactoryResponseDto();
         response.setMessage("Factory deleted successfully!");
 
@@ -165,7 +196,7 @@ public class FactoryService {
             if (uniqueCounts.size() == 3) break;  // top 3 distinct counts mil gaye
         }
 
-        // Step 2: include all items whose count is in that TOP-3 set
+        // include all items whose count is in that TOP-3 set
         return list.stream()
                 .filter(dto -> uniqueCounts.contains(dto.getFactoryCount()))
                 .collect(Collectors.toList());
@@ -198,7 +229,7 @@ public class FactoryService {
             throw new IllegalArgumentException("Invalid type! Use 'all' or 'unassigned'.");
         }
 
-        // ✅ Step 3: Prepare clean response
+
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("filterType", type);

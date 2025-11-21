@@ -25,7 +25,7 @@ public class ToolRequestItem {
     // Each request item belongs to a request
     @ManyToOne
     @JoinColumn(name = "tool_request_id")
-    private Tool_Request toolRequest;
+    private ToolRequest toolRequest;
 
     // Which tool is requested
     @ManyToOne

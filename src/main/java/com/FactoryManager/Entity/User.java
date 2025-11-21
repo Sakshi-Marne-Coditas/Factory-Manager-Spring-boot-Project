@@ -45,7 +45,7 @@ public class User {
     @JoinColumn(name = "factory_id")
     private Factory factory;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private DistributorDetails distributorDetails;
 
     // Relationships
@@ -61,7 +61,7 @@ public class User {
 
 
     @OneToMany(mappedBy = "worker" )
-    private List<Tool_Request> toolRequests;
+    private List<ToolRequest> toolRequests;
 
     @OneToMany(mappedBy = "distributor")
     private List<Redemption> redemptions;

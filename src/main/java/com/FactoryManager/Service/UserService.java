@@ -3,6 +3,7 @@ package com.FactoryManager.Service;
 import com.FactoryManager.DTO.*;
 import com.FactoryManager.Entity.Factory;
 import com.FactoryManager.Repository.FactoryRepository;
+import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import com.FactoryManager.util.JwtUtil;
 import com.FactoryManager.Constatnts.Role;
 import com.FactoryManager.Entity.DistributorDetails;
@@ -120,6 +121,9 @@ public class UserService {
         if (dto.getPhoto() != null && !dto.getPhoto().isEmpty()) {
             try {
                 imageUrl = cloudinaryService.uploadFile(dto.getPhoto());
+                if (dto.getPhoto().getSize() > 2 * 1024 * 1024) { // 2MB
+                    throw new IllegalArgumentException("Photo size must be less than 2MB");
+                }
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading image to Cloudinary", e);
             }
@@ -133,7 +137,7 @@ public class UserService {
 
         if (dto.getFcatory_id() != null) {
             Factory factory = factoryRepository.findById(dto.getFcatory_id())
-                    .orElseThrow(() -> new RuntimeException("Factory not found with id: " + dto.getFcatory_id()));
+                    .orElseThrow(() -> new ElementNotFoundException("Factory not found with id: " + dto.getFcatory_id()));
             user.setFactory(factory);
         }
 
@@ -283,7 +287,7 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        //  1. Fetch paginated data from DB
+        //   Fetch paginated data from DB
         Page<User> userPage;
         if (factoryId != null) {
             userPage = userRepository.findByRoleAndFactory_Id(role, factoryId, pageable);
@@ -291,7 +295,7 @@ public class UserService {
             userPage = userRepository.findByRole(role, pageable);
         }
 
-        // 2. Apply search (in-memory filter)
+        //  Apply search
         List<User> filteredUsers = userPage.getContent().stream()
                 .filter(user -> {
                     if (search == null || search.trim().isEmpty()) return true;
@@ -301,7 +305,7 @@ public class UserService {
                 })
                 .collect(Collectors.toList());
 
-        // ✅ 3. Convert to DTO
+        //  Convert to DTO
         List<EmpByRoleAndFactoryResDto> dtoList = filteredUsers.stream()
                 .map(user -> new EmpByRoleAndFactoryResDto(
                         user.getId(),
@@ -330,13 +334,13 @@ public class UserService {
         if (user.getFactory() != null) {
             userProfileResDto.setFactoryName(user.getFactory().getName());
         } else {
-            userProfileResDto.setFactoryName("N/A");   // or "N/A"
+            userProfileResDto.setFactoryName("N/A");
         }
 
         if (user.getPhoto() != null) {
             userProfileResDto.setPhoto(user.getPhoto());
         } else {
-            userProfileResDto.setPhoto("N/A");   // or "N/A"
+            userProfileResDto.setPhoto("N/A");
         }
 
         return userProfileResDto;
@@ -384,7 +388,7 @@ public class UserService {
         }
 
 
-        //  If factoryId is provided, update factory
+        //  If factory id is provided updating factory
         if (req.getFactoryId() != null) {
             Factory factory = factoryRepository.findById(req.getFactoryId())
                     .orElseThrow(() -> new RuntimeException("Factory not found!"));

@@ -35,7 +35,7 @@ public class Order {
     private LocalDateTime delivery_date;
 
     @Enumerated(EnumType.STRING)
-    private PaymentMethod payment_method;
+    private PaymentMethod paymentMethod;
 
     // who placed the order
     @ManyToOne

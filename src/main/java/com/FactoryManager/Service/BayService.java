@@ -25,12 +25,11 @@ public class BayService {
         bay.setBay_name(addBayReqDto.getBay_Name());
         bay.setFactory(factory);
 
+        bayRepository.save(bay);
         AddBayResDto addBayResDto = new AddBayResDto();
         addBayResDto.setBay_id(bay.getBay_id());
         addBayResDto.setBay_Name(bay.getBay_name());
         addBayResDto.setFactory_name(bay.getFactory().getName());
-
-        bayRepository.save(bay);
         return addBayResDto;
     }
 }

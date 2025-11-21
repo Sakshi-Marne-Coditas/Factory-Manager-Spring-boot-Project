@@ -17,8 +17,6 @@ public class ToolResponseDto {
     private String toolType;
 
     private int thresholdQty;
-    private int totalStock;
 
-    private Integer currentAvailable;  //  new field
 }
 

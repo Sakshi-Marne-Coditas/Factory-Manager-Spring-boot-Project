@@ -8,6 +8,7 @@ import com.FactoryManager.Entity.User;
 import com.FactoryManager.Repository.CartItemRepository;
 import com.FactoryManager.Repository.ProductRepository;
 import com.FactoryManager.Repository.UserRepository;
+import com.FactoryManager.exceptionHandling.ElementNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -38,7 +39,7 @@ public class CartItemService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + request.getProductId()));
+                .orElseThrow(() -> new ElementNotFoundException("Product not found with id: " + request.getProductId()));
 
         var existingItemOpt = cartItemRepository.findByDistributorAndProduct(currentUser, product);
 

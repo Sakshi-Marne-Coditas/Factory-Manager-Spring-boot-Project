@@ -7,11 +7,13 @@ import com.FactoryManager.Entity.Category;
 import com.FactoryManager.Repository.CategoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -42,22 +44,42 @@ public class CategoryService {
     }
 
 
-    public List<AdCategoryResDTO> getAllCategoryNames() {
-        List<Category> categories = new ArrayList<>();
-        categories = repo.findAll();
+    public Page<AdCategoryResDTO> getAllCategoryNames(String search, int page, int size) {
 
-        List<AdCategoryResDTO> dtoList = new ArrayList<>();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        for (Category c : categories) {
-            AdCategoryResDTO dto = new AdCategoryResDTO();
-            dto.setName(c.getCategoryName());
-            dto.setId(c.getId());
-            dtoList.add(dto);
+
+        List<Category> categories = repo.findAll(Sort.by("createdAt").descending());
+
+        //  In-memory search filter
+        List<Category> filtered = categories.stream()
+                .filter(c -> {
+                    if (search != null && !search.isBlank()) {
+                        return c.getCategoryName().toLowerCase()
+                                .contains(search.toLowerCase());
+                    }
+                    return true;
+                })
+                .toList();
+
+        //  Pagination manually apply
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+
+        if (start > filtered.size()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, filtered.size());
         }
 
-        return dtoList;
+        List<Category> paginatedList = filtered.subList(start, end);
 
+        // Convert  DTO
+        List<AdCategoryResDTO> dtoList = paginatedList.stream()
+                .map(c -> new AdCategoryResDTO(c.getId(), c.getCategoryName()))
+                .toList();
+
+        return new PageImpl<>(dtoList, pageable, filtered.size());
     }
 
 
-    }
+
+}
